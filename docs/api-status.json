@@ -1439,6 +1439,12 @@
         "comment": "OperateAsyncWithMtime starts the operation(s) like OperateAsync, setting\nthe object's modification time to mtime instead of the current time.\nlibrados copies mtime before the call returns. It needs Ceph Reef or\nlater.\n\nImplements:\n\n\tint rados_aio_write_op_operate2(rados_write_op_t write_op,\n\t                                rados_ioctx_t io,\n\t                                rados_completion_t completion,\n\t                                const char *oid,\n\t                                struct timespec *mtime,\n\t                                int flags);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Iter.Locator",
+        "comment": "Locator returns the object locator of the current value of the iterator,\nafter a successful call to Next. It is empty for an object stored\nwithout a locator.\n\nImplements:\n\n\tint rados_nobjects_list_next(rados_list_ctx_t ctx,\n\t                             const char **entry,\n\t                             const char **key,\n\t                             const char **nspace);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
