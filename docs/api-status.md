@@ -24,6 +24,30 @@ Name | Added in Version | Expected Stable Version |
 IOContext.Checksum | v0.40.0 | v0.42.0 | 
 IOContext.GetOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AioCompletion.Done | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AioCompletion.ReturnValue | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AioCompletion.Err | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AioCompletion.Version | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AioCompletion.Release | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+SetAioMode | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.CmpXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpGetXattrsStep.Xattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.GetXattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpOmapGetKeysStep.Keys | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpOmapGetKeysStep.More | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.GetOmapKeys | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpStatStep.Size | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpStatStep.ModTime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.Stat | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.Append | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.CmpXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.OmapCmp | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.RmXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.SetFlags | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.Truncate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.Zero | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
