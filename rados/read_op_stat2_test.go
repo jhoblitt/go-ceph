@@ -41,20 +41,22 @@ func (suite *RadosTestSuite) TestReadOpStat() {
 
 func (suite *RadosTestSuite) TestReadOpStatAsync() {
 	suite.SetupConnection()
-	ta := assert.New(suite.T())
+	suite.forEachAioMode(func() {
+		ta := assert.New(suite.T())
 
-	oid := suite.GenObjectName()
-	data := []byte("stat this object asynchronously")
-	ta.NoError(suite.ioctx.WriteFull(oid, data))
+		oid := suite.GenObjectName()
+		data := []byte("stat this object asynchronously")
+		ta.NoError(suite.ioctx.WriteFull(oid, data))
 
-	rop := CreateReadOp()
-	step := rop.Stat()
-	c, err := rop.OperateAsync(suite.ioctx, oid, OperationNoFlag)
-	ta.NoError(err)
-	rop.Release()
-	<-c.Done()
-	ta.NoError(c.Err())
-	c.Release()
-	ta.Equal(uint64(len(data)), step.Size())
-	ta.WithinDuration(time.Now(), step.ModTime(), 10*time.Minute)
+		rop := CreateReadOp()
+		step := rop.Stat()
+		c, err := rop.OperateAsync(suite.ioctx, oid, OperationNoFlag)
+		ta.NoError(err)
+		rop.Release()
+		<-c.Done()
+		ta.NoError(c.Err())
+		c.Release()
+		ta.Equal(uint64(len(data)), step.Size())
+		ta.WithinDuration(time.Now(), step.ModTime(), 10*time.Minute)
+	})
 }
