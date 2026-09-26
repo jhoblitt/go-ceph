@@ -48,6 +48,7 @@ WriteOp.RmXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 WriteOp.SetFlags | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 WriteOp.Truncate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 WriteOp.Zero | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.OperateAsyncWithMtime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 

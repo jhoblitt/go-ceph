@@ -1433,6 +1433,12 @@
         "comment": "Zero overwrites length bytes of the object, starting at offset, with\nzeros.\n\nImplements:\n\n\tvoid rados_write_op_zero(rados_write_op_t write_op,\n\t                         uint64_t offset,\n\t                         uint64_t len);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.OperateAsyncWithMtime",
+        "comment": "OperateAsyncWithMtime starts the operation(s) like OperateAsync, setting\nthe object's modification time to mtime instead of the current time.\nlibrados copies mtime before the call returns.\n\nImplements:\n\n\tint rados_aio_write_op_operate2(rados_write_op_t write_op,\n\t                                rados_ioctx_t io,\n\t                                rados_completion_t completion,\n\t                                const char *oid,\n\t                                struct timespec *mtime,\n\t                                int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
