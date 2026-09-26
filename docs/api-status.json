@@ -1289,6 +1289,150 @@
         "comment": "GetAllOmapValuesOrdered fetches all the keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetAllOmapValues,\nwhich returns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`iteratorSize`: internal number of keys to fetch during a read operation\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AioCompletion.Done",
+        "comment": "Done returns a channel that is closed when librados reports that the\noperation has completed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AioCompletion.ReturnValue",
+        "comment": "ReturnValue returns the return value of the operation. It is valid only\nafter the channel returned by Done is closed.\n\nImplements:\n\n\tint rados_aio_get_return_value(rados_completion_t c);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AioCompletion.Err",
+        "comment": "Err returns the error Operate would have returned for the operation:\nnil on success, otherwise an OperationError built from the return value\nand the errors of the operation's steps. It is valid only after the\nchannel returned by Done is closed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AioCompletion.Version",
+        "comment": "Version returns the version of the object after the operation. It is\nvalid only after the channel returned by Done is closed.\n\nImplements:\n\n\tuint64_t rados_aio_get_version(rados_completion_t c);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AioCompletion.Release",
+        "comment": "Release waits for the operation to complete, then frees the C completion,\nunpins the buffers the operation used and frees its steps' C memory. The\nresults the steps copied into Go memory stay readable. Release may be\ncalled more than once, but not concurrently.\n\nImplements:\n\n\tvoid rados_aio_release(rados_completion_t c);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SetAioMode",
+        "comment": "SetAioMode selects how the completions of operations started by\nOperateAsync afterwards are delivered. The setting is process-wide and is\nmeant to be made once, before the first OperateAsync.\n\nIn AioModePipe a single goroutine, started by the first OperateAsync,\ndrains the pipe. Switching away from AioModePipe waits until every\noperation started in that mode has completed, then closes the pipe, which\nstops the goroutine. Otherwise the goroutine and the pipe live until the\nprocess exits.\n\nIf the pipe cannot be created, or m is not a known mode, OperateAsync\nreturns the error until SetAioMode is called again.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.CmpXattr",
+        "comment": "CmpXattr asserts that the xattr name of the object compares to value as\nop specifies; if it does not, the whole read operation fails with\nECANCELED. The comparison is a byte-wise string comparison with value as\nthe left-hand operand: CmpXattrOpGt holds when value is greater than the\nstored xattr.\n\nThe OSD reports a true comparison in a read operation as the positive\nreturn value 1, which also becomes the return value of the actions that\nfollow it. Operate therefore returns an OperationError whose OpError\ncarries the code 1 when the comparison holds; a false comparison carries\n-ECANCELED.\n\nImplements:\n\n\tvoid rados_read_op_cmpxattr(rados_read_op_t read_op,\n\t                            const char *name,\n\t                            uint8_t comparison_operator,\n\t                            const char *value,\n\t                            size_t value_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpGetXattrsStep.Xattrs",
+        "comment": "Xattrs returns the extended attributes of the object, keyed by name.\nMay be called only after Operate() finished successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.GetXattrs",
+        "comment": "GetXattrs fetches all extended attributes of the object as part of the\nread operation. The returned step provides the attributes after the\noperation has been performed.\n\nImplements:\n\n\tvoid rados_read_op_getxattrs(rados_read_op_t read_op,\n\t                             rados_xattrs_iter_t *iter,\n\t                             int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpOmapGetKeysStep.Keys",
+        "comment": "Keys returns the omap keys, in order. May be called only after Operate()\nfinished successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpOmapGetKeysStep.More",
+        "comment": "More reports whether keys beyond those returned by Keys are available.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.GetOmapKeys",
+        "comment": "GetOmapKeys lists up to maxReturn omap keys of the object that sort after\nstartAfter, as part of the read operation.\n\nstartAfter is passed to librados as a NUL-terminated C string and must\nnot contain a NUL byte; if it does, Operate returns an error wrapping\nErrNulInString.\n\nImplements:\n\n\tvoid rados_read_op_omap_get_keys2(rados_read_op_t read_op,\n\t                                  const char *start_after,\n\t                                  uint64_t max_return,\n\t                                  rados_omap_iter_t *iter,\n\t                                  unsigned char *pmore,\n\t                                  int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.OperateAsync",
+        "comment": "OperateAsync starts the operation(s) and returns without waiting for\nthem. The returned AioCompletion reports when the operation is done and\ntakes over the op's steps: they are updated before the completion's Done\nchannel is closed, and freed by AioCompletion.Release rather than by\nReadOp.Release, which may be called as soon as OperateAsync returns. The\nop cannot be operated again.\n\nImplements:\n\n\tint rados_aio_read_op_operate(rados_read_op_t read_op,\n\t                              rados_ioctx_t io,\n\t                              rados_completion_t completion,\n\t                              const char *oid,\n\t                              int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpStatStep.Size",
+        "comment": "Size returns the size of the object in bytes. It is zero until the\noperation has been performed successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpStatStep.ModTime",
+        "comment": "ModTime returns the modification time of the object. It is the zero\ntime until the operation has been performed successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.Stat",
+        "comment": "Stat fetches the size and modification time of the object as part of\nthe read operation.\n\nImplements:\n\n\tvoid rados_read_op_stat2(rados_read_op_t read_op,\n\t                         uint64_t *psize,\n\t                         struct timespec *pmtime,\n\t                         int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Append",
+        "comment": "Append appends b to the end of the object.\n\nImplements:\n\n\tvoid rados_write_op_append(rados_write_op_t write_op,\n\t                           const char *buffer,\n\t                           size_t len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.CmpXattr",
+        "comment": "CmpXattr asserts that the xattr name of the object compares to value as\nop specifies; if it does not, the whole write operation fails with\nECANCELED and none of its actions are applied. The comparison is a\nbyte-wise string comparison with value as the left-hand operand:\nCmpXattrOpGt holds when value is greater than the stored xattr.\n\nImplements:\n\n\tvoid rados_write_op_cmpxattr(rados_write_op_t write_op,\n\t                             const char *name,\n\t                             uint8_t comparison_operator,\n\t                             const char *value,\n\t                             size_t value_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.OmapCmp",
+        "comment": "OmapCmp asserts that the omap value stored under key compares to value\nas op specifies; if it does not, the whole write operation fails with\nECANCELED and none of its actions are applied. A missing key compares as\nan empty value. The stored value is the left-hand operand: CmpXattrOpLt\nholds when the stored value is less than value. The OSD supports only\nCmpXattrOpEq, CmpXattrOpLt and CmpXattrOpGt here; other operators fail\nthe operation with EINVAL.\n\nThe key is passed with its length, so it may contain NUL bytes.\n\nImplements:\n\n\tvoid rados_write_op_omap_cmp2(rados_write_op_t write_op,\n\t                              const char *key,\n\t                              uint8_t comparison_operator,\n\t                              const char *val,\n\t                              size_t key_len,\n\t                              size_t val_len,\n\t                              int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.OperateAsync",
+        "comment": "OperateAsync starts the operation(s) and returns without waiting for\nthem. The returned AioCompletion reports when the operation is done and\ntakes over the op's steps: they are updated before the completion's Done\nchannel is closed, and freed by AioCompletion.Release rather than by\nWriteOp.Release, which may be called as soon as OperateAsync returns. The\nop cannot be operated again.\n\nImplements:\n\n\tint rados_aio_write_op_operate(rados_write_op_t write_op,\n\t                               rados_ioctx_t io,\n\t                               rados_completion_t completion,\n\t                               const char *oid,\n\t                               time_t *mtime,\n\t                               int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.RmXattr",
+        "comment": "RmXattr removes the xattr name from the object.\n\nImplements:\n\n\tvoid rados_write_op_rmxattr(rados_write_op_t write_op,\n\t                            const char *name);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.SetFlags",
+        "comment": "SetFlags sets per-op flags on the action most recently added to the write\noperation, for example OpFlagFailOk to let the operation succeed even if\nthat action fails. The flags are LIBRADOS_OP_FLAG_* values (OpFlags), not\nthe OperationFlags passed to Operate.\n\nImplements:\n\n\tvoid rados_write_op_set_flags(rados_write_op_t write_op,\n\t                              int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Truncate",
+        "comment": "Truncate sets the size of the object to offset, discarding or\nzero-extending its data as needed.\n\nImplements:\n\n\tvoid rados_write_op_truncate(rados_write_op_t write_op,\n\t                             uint64_t offset);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Zero",
+        "comment": "Zero overwrites length bytes of the object, starting at offset, with\nzeros.\n\nImplements:\n\n\tvoid rados_write_op_zero(rados_write_op_t write_op,\n\t                         uint64_t offset,\n\t                         uint64_t len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
