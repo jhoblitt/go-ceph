@@ -22,6 +22,7 @@ import "C"
 
 import (
 	"runtime"
+	"sync"
 
 	"github.com/ceph/go-ceph/internal/callbacks"
 	"github.com/ceph/go-ceph/internal/log"
@@ -42,36 +43,56 @@ type AioCompletion struct {
 	id   uintptr
 	kind opKind
 	op   operation
+	pipe *aioPipe // nil for a callback-mode completion
 
 	pinner runtime.Pinner
 	done   chan struct{}
+
+	// setup is held while operateAsync fills in the completion. The
+	// notification reaches aioComplete through librados, and in pipe mode
+	// through a pipe written from C, neither of which orders memory for
+	// Go; taking setup there does.
+	setup sync.Mutex
 
 	ret     int
 	version uint64
 	err     error
 }
 
-// operateAsync creates a completion, moves the steps of o into it, and
-// calls submit to start the operation. If submit fails, the steps are
-// returned to o.
+// operateAsync creates a completion with the notifier selected by
+// SetAioMode, moves the steps of o into it, and calls submit to start the
+// operation. If submit fails, the steps are returned to o.
 func operateAsync(
 	kind opKind, o *operation, submit func(C.rados_completion_t) C.int) (*AioCompletion, error) {
 
+	aioNotifier.mu.RLock()
+	defer aioNotifier.mu.RUnlock()
+	if aioNotifier.err != nil {
+		return nil, aioNotifier.err
+	}
+
 	c := &AioCompletion{
 		kind: kind,
+		pipe: aioNotifier.pipe,
 		done: make(chan struct{}),
 	}
+	c.setup.Lock()
 	c.pin(o.steps)
 	c.id = aioCompletions.Add(c)
 
-	var cc C.rados_completion_t
-	if ret := C.aio_create_callback_completion(C.uintptr_t(c.id), &cc); ret < 0 {
+	var err error
+	if c.pipe != nil {
+		c.c, err = c.pipe.createCompletion(c.id)
+	} else {
+		c.c, err = createCallbackCompletion(c.id)
+	}
+	if err != nil {
 		aioCompletions.Remove(c.id)
 		c.pinner.Unpin()
-		return nil, getError(ret)
+		return nil, err
 	}
-	c.c = cc
 	c.op.steps, o.steps = o.steps, nil
+	c.setup.Unlock()
 
 	if ret := submit(c.c); ret < 0 {
 		o.steps, c.op.steps = c.op.steps, nil
@@ -79,10 +100,29 @@ func operateAsync(
 		C.rados_aio_release(c.c)
 		c.c = nil
 		c.pinner.Unpin()
+		if c.pipe != nil {
+			c.pipe.completed()
+		}
 		return nil, getError(ret)
 	}
 	runtime.SetFinalizer(c, aioCompletionFinalizer)
 	return c, nil
+}
+
+// createCallbackCompletion creates a completion whose callback completes
+// the operation identified by id in aioCompleteCallback.
+//
+// Implements:
+//
+//	int rados_aio_create_completion2(void *cb_arg,
+//	                                 rados_callback_t cb_complete,
+//	                                 rados_completion_t *pc);
+func createCallbackCompletion(id uintptr) (C.rados_completion_t, error) {
+	var cc C.rados_completion_t
+	if ret := C.aio_create_callback_completion(C.uintptr_t(id), &cc); ret < 0 {
+		return nil, getError(ret)
+	}
+	return cc, nil
 }
 
 // pin pins every Go buffer that a step handed to librados, so that it
@@ -117,6 +157,8 @@ func aioComplete(id uintptr) {
 		return
 	}
 	aioCompletions.Remove(id)
+	c.setup.Lock()
+	defer c.setup.Unlock()
 
 	ret := C.rados_aio_get_return_value(c.c)
 	c.ret = int(ret)
@@ -126,6 +168,9 @@ func aioComplete(id uintptr) {
 	}
 	c.err = c.op.update(c.kind, ret)
 	close(c.done)
+	if c.pipe != nil {
+		c.pipe.completed()
+	}
 }
 
 // Done returns a channel that is closed when librados reports that the
