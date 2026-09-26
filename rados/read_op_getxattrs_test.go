@@ -59,3 +59,25 @@ func (suite *RadosTestSuite) TestReadOpGetXattrs() {
 	_, err = step3.Xattrs()
 	ta.Error(err)
 }
+
+func (suite *RadosTestSuite) TestReadOpGetXattrsAsync() {
+	suite.SetupConnection()
+	ta := assert.New(suite.T())
+
+	oid := suite.GenObjectName()
+	ta.NoError(suite.ioctx.SetXattr(oid, "attr", []byte("value")))
+
+	// a true guard in front must not hide the xattrs
+	rop := CreateReadOp()
+	rop.CmpXattr("attr", CmpXattrOpEq, []byte("value"))
+	step := rop.GetXattrs()
+	c, err := rop.OperateAsync(suite.ioctx, oid, OperationNoFlag)
+	ta.NoError(err)
+	rop.Release()
+	<-c.Done()
+	ta.NoError(c.Err())
+	c.Release()
+	got, err := step.Xattrs()
+	ta.NoError(err)
+	ta.Equal(map[string][]byte{"attr": []byte("value")}, got)
+}

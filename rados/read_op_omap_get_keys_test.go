@@ -49,3 +49,28 @@ func (suite *RadosTestSuite) TestReadOpGetOmapKeys() {
 	_, _, err = getKeys("a\x00b", 10)
 	ta.ErrorIs(err, ErrNulInString)
 }
+
+func (suite *RadosTestSuite) TestReadOpGetOmapKeysAsync() {
+	suite.SetupConnection()
+	ta := assert.New(suite.T())
+
+	oid := suite.GenObjectName()
+	ta.NoError(suite.ioctx.SetOmap(oid, map[string][]byte{
+		"a": []byte("1"),
+		"b": []byte("2"),
+		"c": []byte("3"),
+	}))
+
+	rop := CreateReadOp()
+	step := rop.GetOmapKeys("a", 1)
+	c, err := rop.OperateAsync(suite.ioctx, oid, OperationNoFlag)
+	ta.NoError(err)
+	rop.Release()
+	<-c.Done()
+	ta.NoError(c.Err())
+	c.Release()
+	keys, err := step.Keys()
+	ta.NoError(err)
+	ta.Equal([]string{"b"}, keys)
+	ta.True(step.More())
+}
