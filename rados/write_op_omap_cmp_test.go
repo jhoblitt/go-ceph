@@ -53,3 +53,36 @@ func (suite *RadosTestSuite) TestWriteOpOmapCmp() {
 	ta.NoError(writeIf("k\x00ey", CmpXattrOpEq, []byte("nul"), "sixth"))
 	ta.Equal("sixth", read())
 }
+
+func (suite *RadosTestSuite) TestWriteOpOmapCmpAsync() {
+	suite.SetupConnection()
+	ta := assert.New(suite.T())
+
+	oid := suite.GenObjectName()
+	ta.NoError(suite.ioctx.SetOmap(oid, map[string][]byte{"key": []byte("value")}))
+
+	writeIf := func(v []byte, data string) *AioCompletion {
+		wop := CreateWriteOp()
+		defer wop.Release()
+		wop.OmapCmp("key", CmpXattrOpEq, v)
+		wop.WriteFull([]byte(data))
+		c, err := wop.OperateAsync(suite.ioctx, oid, OperationNoFlag)
+		ta.NoError(err)
+		return c
+	}
+
+	c := writeIf([]byte("other"), "first")
+	<-c.Done()
+	ta.Equal(-int(syscall.ECANCELED), opErrorCode(c.Err()))
+	c.Release()
+
+	c = writeIf([]byte("value"), "second")
+	<-c.Done()
+	ta.NoError(c.Err())
+	c.Release()
+
+	buf := make([]byte, 64)
+	n, err := suite.ioctx.Read(oid, buf, 0)
+	ta.NoError(err)
+	ta.Equal("second", string(buf[:n]))
+}
