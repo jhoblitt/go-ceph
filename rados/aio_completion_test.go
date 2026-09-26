@@ -41,48 +41,50 @@ func goroutineCount() int {
 
 func (suite *RadosTestSuite) TestAioCompletionConcurrent() {
 	suite.SetupConnection()
-	ta := assert.New(suite.T())
+	suite.forEachAioMode(func() {
+		ta := assert.New(suite.T())
 
-	const inflight = 256
-	write := func(i int) *AioCompletion {
-		wop := CreateWriteOp()
-		defer wop.Release()
-		wop.WriteFull([]byte(fmt.Sprintf("object %d", i)))
-		c, err := wop.OperateAsync(suite.ioctx, fmt.Sprintf("%s_%d", suite.T().Name(), i), OperationNoFlag)
-		require.NoError(suite.T(), err)
-		return c
-	}
-
-	// a warm-up operation starts anything that lives for the process
-	c := write(-1)
-	<-c.Done()
-	c.Release()
-	baseline := goroutineCount()
-
-	completions := make([]*AioCompletion, inflight)
-	for i := range completions {
-		completions[i] = write(i)
-	}
-	for i, c := range completions {
-		select {
-		case <-c.Done():
-		case <-time.After(time.Minute):
-			suite.T().Fatalf("completion %d never finished", i)
+		const inflight = 256
+		write := func(i int) *AioCompletion {
+			wop := CreateWriteOp()
+			defer wop.Release()
+			wop.WriteFull([]byte(fmt.Sprintf("object %d", i)))
+			c, err := wop.OperateAsync(suite.ioctx, fmt.Sprintf("%s_%d", suite.T().Name(), i), OperationNoFlag)
+			require.NoError(suite.T(), err)
+			return c
 		}
-		ta.Equal(0, c.ReturnValue())
+
+		// a warm-up operation starts anything that lives for the process
+		c := write(-1)
+		<-c.Done()
 		c.Release()
-	}
+		baseline := goroutineCount()
 
-	// polled here rather than with assert.Eventually, which runs its
-	// condition in a goroutine of its own
-	deadline := time.Now().Add(10 * time.Second)
-	for goroutineCount() > baseline && time.Now().Before(deadline) {
-		time.Sleep(10 * time.Millisecond)
-	}
-	ta.LessOrEqual(goroutineCount(), baseline)
+		completions := make([]*AioCompletion, inflight)
+		for i := range completions {
+			completions[i] = write(i)
+		}
+		for i, c := range completions {
+			select {
+			case <-c.Done():
+			case <-time.After(time.Minute):
+				suite.T().Fatalf("completion %d never finished", i)
+			}
+			ta.Equal(0, c.ReturnValue())
+			c.Release()
+		}
 
-	buf := make([]byte, 64)
-	n, err := suite.ioctx.Read(fmt.Sprintf("%s_%d", suite.T().Name(), inflight-1), buf, 0)
-	ta.NoError(err)
-	ta.Equal(fmt.Sprintf("object %d", inflight-1), string(buf[:n]))
+		// polled here rather than with assert.Eventually, which runs its
+		// condition in a goroutine of its own
+		deadline := time.Now().Add(10 * time.Second)
+		for goroutineCount() > baseline && time.Now().Before(deadline) {
+			time.Sleep(10 * time.Millisecond)
+		}
+		ta.LessOrEqual(goroutineCount(), baseline)
+
+		buf := make([]byte, 64)
+		n, err := suite.ioctx.Read(fmt.Sprintf("%s_%d", suite.T().Name(), inflight-1), buf, 0)
+		ta.NoError(err)
+		ta.Equal(fmt.Sprintf("object %d", inflight-1), string(buf[:n]))
+	})
 }
