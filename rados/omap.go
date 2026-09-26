@@ -70,7 +70,9 @@ func (gos *GetOmapStep) update() error {
 		gos.canIterate = false
 		return gos.err
 	}
-	err := getError(*gos.rval)
+	// A positive prval is not an error: a true CmpXattr earlier in the
+	// operation leaves its result, 1, in the prval of later actions.
+	err := getErrorIfNegative(*gos.rval)
 	gos.canIterate = (err == nil)
 	return err
 }

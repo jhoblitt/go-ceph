@@ -57,7 +57,9 @@ func (es *ReadOpExecStep) freeBuffer() {
 
 // update - update state operation.
 func (es *ReadOpExecStep) update() error {
-	err := getError(es.prval)
+	// A positive prval is not an error: a true CmpXattr earlier in the
+	// operation leaves its result, 1, in the prval of later actions.
+	err := getErrorIfNegative(es.prval)
 	es.canReadOutput = err == nil
 	return err
 }

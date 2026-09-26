@@ -45,7 +45,9 @@ func (s *ReadOpOmapGetValsByKeysStep) free() {
 }
 
 func (s *ReadOpOmapGetValsByKeysStep) update() error {
-	err := getError(*s.prval)
+	// A positive prval is not an error: a true CmpXattr earlier in the
+	// operation leaves its result, 1, in the prval of later actions.
+	err := getErrorIfNegative(*s.prval)
 	s.canIterate = (err == nil)
 
 	return err

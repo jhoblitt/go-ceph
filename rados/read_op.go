@@ -44,7 +44,17 @@ func (r *ReadOp) Operate(ioctx *IOContext, oid string, flags OperationFlags) err
 	defer C.free(unsafe.Pointer(cOid))
 
 	ret := C.rados_read_op_operate(r.op, ioctx.ioctx, cOid, C.int(flags))
-	return r.update(readOp, ret)
+	return r.update(readOp, readOpResult(ret))
+}
+
+// readOpResult maps the return value of a read operation to the value the
+// operation's error is built from. Only a negative return is an error: a
+// true CmpXattr comparison makes the OSD return 1.
+func readOpResult(ret C.int) C.int {
+	if ret > 0 {
+		return 0
+	}
+	return ret
 }
 
 func (r *ReadOp) operateCompat(ioctx *IOContext, oid string) error {
