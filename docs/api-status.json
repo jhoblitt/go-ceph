@@ -1433,6 +1433,12 @@
         "comment": "OperateAsync starts the operation(s) and returns without waiting for\nthem. The returned AioCompletion reports when the operation is done and\ntakes over the op's steps: they are updated before the completion's Done\nchannel is closed, and freed by AioCompletion.Release rather than by\nWriteOp.Release, which may be called as soon as OperateAsync returns. The\nop cannot be operated again.\n\nImplements:\n\n\tint rados_aio_write_op_operate(rados_write_op_t write_op,\n\t                               rados_ioctx_t io,\n\t                               rados_completion_t completion,\n\t                               const char *oid,\n\t                               time_t *mtime,\n\t                               int flags);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.OperateAsyncWithMtime",
+        "comment": "OperateAsyncWithMtime starts the operation(s) like OperateAsync, setting\nthe object's modification time to mtime instead of the current time.\nlibrados copies mtime before the call returns. It needs Ceph Reef or\nlater.\n\nImplements:\n\n\tint rados_aio_write_op_operate2(rados_write_op_t write_op,\n\t                                rados_ioctx_t io,\n\t                                rados_completion_t completion,\n\t                                const char *oid,\n\t                                struct timespec *mtime,\n\t                                int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
