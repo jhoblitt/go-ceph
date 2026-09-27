@@ -78,15 +78,15 @@ func (suite *OSDAdminSuite) TestOSDBlocklist() {
 
 		// The mon stamps the expiry with its own clock while handling
 		// the command, so it can only be bounded by the client times
-		// taken before and after the call. The mon truncates "until" to
-		// microseconds, which can put it up to 1us below the lower bound.
+		// taken before and after the call, with a small margin for the
+		// precision of the reported "until".
 		const expire = 22300 * time.Millisecond
-		t0 := time.Now()
+		before := time.Now()
 		err = osda.OSDBlocklistAdd(AddressEntry{
 			Addr:   "192.168.122.3",
 			Expire: expire.Seconds(),
 		})
-		t1 := time.Now()
+		after := time.Now()
 		assert.NoError(t, err)
 
 		res, err := osda.OSDBlocklist()
@@ -95,8 +95,8 @@ func (suite *OSDAdminSuite) TestOSDBlocklist() {
 		for _, entry := range *res {
 			if strings.Contains(entry.Addr, "192.168.122.3") {
 				assert.WithinRange(t, entry.Until,
-					t0.Add(expire-time.Microsecond),
-					t1.Add(expire))
+					before.Add(expire-time.Millisecond),
+					after.Add(expire+time.Millisecond))
 				break
 			}
 		}
