@@ -67,6 +67,35 @@ func operateAsync(
 
 	aioNotifier.mu.RLock()
 	defer aioNotifier.mu.RUnlock()
+
+	c, err := newAioCompletion(kind, o)
+	if err != nil {
+		return nil, err
+	}
+	if ret := submit(c.c); ret < 0 {
+		runtime.SetFinalizer(c, nil)
+		o.steps, c.op.steps = c.op.steps, nil
+		aioCompletions.Remove(c.id)
+		C.rados_aio_release(c.c)
+		c.c = nil
+		c.pinner.Unpin()
+		if c.pipe != nil {
+			c.pipe.completed()
+		}
+		return nil, getError(ret)
+	}
+	return c, nil
+}
+
+// newAioCompletion creates a completion with the notifier selected by
+// SetAioMode and moves the steps of o into it. The caller must hold
+// aioNotifier.mu for reading.
+//
+// The finalizer unpins the buffers of a completion that is dropped without
+// Release: the runtime panics when it collects a Pinner that still holds
+// pinned memory. It cannot run while librados owns the operation, because
+// aioCompletions holds the completion until aioComplete.
+func newAioCompletion(kind opKind, o *operation) (*AioCompletion, error) {
 	if aioNotifier.err != nil {
 		return nil, aioNotifier.err
 	}
@@ -93,18 +122,6 @@ func operateAsync(
 	}
 	c.op.steps, o.steps = o.steps, nil
 	c.setup.Unlock()
-
-	if ret := submit(c.c); ret < 0 {
-		o.steps, c.op.steps = c.op.steps, nil
-		aioCompletions.Remove(c.id)
-		C.rados_aio_release(c.c)
-		c.c = nil
-		c.pinner.Unpin()
-		if c.pipe != nil {
-			c.pipe.completed()
-		}
-		return nil, getError(ret)
-	}
 	runtime.SetFinalizer(c, aioCompletionFinalizer)
 	return c, nil
 }
