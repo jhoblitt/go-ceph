@@ -10,6 +10,7 @@ type Iter struct {
 	ctx       C.rados_list_ctx_t
 	err       error
 	entry     string
+	locator   string
 	namespace string
 }
 
@@ -51,12 +52,14 @@ func (iter *Iter) Seek(token IterToken) {
 //	return iter.Err()
 func (iter *Iter) Next() bool {
 	var cEntry *C.char
+	var cLocator *C.char
 	var cNamespace *C.char
-	if cerr := C.rados_nobjects_list_next(iter.ctx, &cEntry, nil, &cNamespace); cerr < 0 {
+	if cerr := C.rados_nobjects_list_next(iter.ctx, &cEntry, &cLocator, &cNamespace); cerr < 0 {
 		iter.err = getError(cerr)
 		return false
 	}
 	iter.entry = C.GoString(cEntry)
+	iter.locator = C.GoString(cLocator)
 	iter.namespace = C.GoString(cNamespace)
 	return true
 }
