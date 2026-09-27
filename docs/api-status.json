@@ -1289,6 +1289,60 @@
         "comment": "GetAllOmapValuesOrdered fetches all the keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetAllOmapValues,\nwhich returns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`iteratorSize`: internal number of keys to fetch during a read operation\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.CmpXattr",
+        "comment": "CmpXattr asserts that the xattr name of the object compares to value as\nop specifies; if it does not, the whole read operation fails with\nECANCELED. The comparison is a byte-wise string comparison with value as\nthe left-hand operand: CmpXattrOpGt holds when value is greater than the\nstored xattr.\n\nThe OSD reports a true comparison in a read operation as the positive\nreturn value 1, and carries that value into the return values of the\nactions that follow it. A read operation therefore treats only a negative\nreturn value as an error, so a true comparison lets Operate succeed and\nthe later actions' results stay readable.\n\nImplements:\n\n\tvoid rados_read_op_cmpxattr(rados_read_op_t read_op,\n\t                            const char *name,\n\t                            uint8_t comparison_operator,\n\t                            const char *value,\n\t                            size_t value_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpGetXattrsStep.Xattrs",
+        "comment": "Xattrs returns the extended attributes of the object, keyed by name.\nMay be called only after Operate() finished successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.GetXattrs",
+        "comment": "GetXattrs fetches all extended attributes of the object as part of the\nread operation. The returned step provides the attributes after the\noperation has been performed.\n\nImplements:\n\n\tvoid rados_read_op_getxattrs(rados_read_op_t read_op,\n\t                             rados_xattrs_iter_t *iter,\n\t                             int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpOmapGetKeysStep.Keys",
+        "comment": "Keys returns the omap keys, in order. May be called only after Operate()\nfinished successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpOmapGetKeysStep.More",
+        "comment": "More reports whether keys beyond those returned by Keys are available.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.GetOmapKeys",
+        "comment": "GetOmapKeys lists up to maxReturn omap keys of the object that sort after\nstartAfter, as part of the read operation.\n\nstartAfter is passed to librados as a NUL-terminated C string and must\nnot contain a NUL byte; if it does, Operate returns an error wrapping\nErrNulInString.\n\nImplements:\n\n\tvoid rados_read_op_omap_get_keys2(rados_read_op_t read_op,\n\t                                  const char *start_after,\n\t                                  uint64_t max_return,\n\t                                  rados_omap_iter_t *iter,\n\t                                  unsigned char *pmore,\n\t                                  int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpStatStep.Size",
+        "comment": "Size returns the size of the object in bytes. It is zero until the\noperation has been performed successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpStatStep.ModTime",
+        "comment": "ModTime returns the modification time of the object. It is the zero\ntime until the operation has been performed successfully.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.Stat",
+        "comment": "Stat fetches the size and modification time of the object as part of\nthe read operation. It needs Ceph Reef or later.\n\nImplements:\n\n\tvoid rados_read_op_stat2(rados_read_op_t read_op,\n\t                         uint64_t *psize,\n\t                         struct timespec *pmtime,\n\t                         int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },

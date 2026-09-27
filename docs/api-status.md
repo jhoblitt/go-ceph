@@ -24,6 +24,15 @@ Name | Added in Version | Expected Stable Version |
 IOContext.Checksum | v0.40.0 | v0.42.0 | 
 IOContext.GetOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.CmpXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpGetXattrsStep.Xattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.GetXattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpOmapGetKeysStep.Keys | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpOmapGetKeysStep.More | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.GetOmapKeys | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpStatStep.Size | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpStatStep.ModTime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.Stat | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
