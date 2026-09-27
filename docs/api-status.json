@@ -1343,6 +1343,48 @@
         "comment": "Stat fetches the size and modification time of the object as part of\nthe read operation. It needs Ceph Reef or later.\n\nImplements:\n\n\tvoid rados_read_op_stat2(rados_read_op_t read_op,\n\t                         uint64_t *psize,\n\t                         struct timespec *pmtime,\n\t                         int *prval);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Append",
+        "comment": "Append appends b to the end of the object.\n\nImplements:\n\n\tvoid rados_write_op_append(rados_write_op_t write_op,\n\t                           const char *buffer,\n\t                           size_t len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.CmpXattr",
+        "comment": "CmpXattr asserts that the xattr name of the object compares to value as\nop specifies; if it does not, the whole write operation fails with\nECANCELED and none of its actions are applied. The comparison is a\nbyte-wise string comparison with value as the left-hand operand:\nCmpXattrOpGt holds when value is greater than the stored xattr.\n\nImplements:\n\n\tvoid rados_write_op_cmpxattr(rados_write_op_t write_op,\n\t                             const char *name,\n\t                             uint8_t comparison_operator,\n\t                             const char *value,\n\t                             size_t value_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.OmapCmp",
+        "comment": "OmapCmp asserts that the omap value stored under key compares to value\nas op specifies; if it does not, the whole write operation fails with\nECANCELED and none of its actions are applied. A missing key compares as\nan empty value. The stored value is the left-hand operand: CmpXattrOpLt\nholds when the stored value is less than value. The OSD supports only\nCmpXattrOpEq, CmpXattrOpLt and CmpXattrOpGt here; other operators fail\nthe operation with EINVAL.\n\nThe key is passed with its length, so it may contain NUL bytes.\n\nImplements:\n\n\tvoid rados_write_op_omap_cmp2(rados_write_op_t write_op,\n\t                              const char *key,\n\t                              uint8_t comparison_operator,\n\t                              const char *val,\n\t                              size_t key_len,\n\t                              size_t val_len,\n\t                              int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.RmXattr",
+        "comment": "RmXattr removes the xattr name from the object.\n\nImplements:\n\n\tvoid rados_write_op_rmxattr(rados_write_op_t write_op,\n\t                            const char *name);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.SetFlags",
+        "comment": "SetFlags sets per-op flags on the action most recently added to the write\noperation, for example OpFlagFailOk to let the operation succeed even if\nthat action fails. The flags are LIBRADOS_OP_FLAG_* values (OpFlags), not\nthe OperationFlags passed to Operate.\n\nImplements:\n\n\tvoid rados_write_op_set_flags(rados_write_op_t write_op,\n\t                              int flags);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Truncate",
+        "comment": "Truncate sets the size of the object to offset, discarding or\nzero-extending its data as needed.\n\nImplements:\n\n\tvoid rados_write_op_truncate(rados_write_op_t write_op,\n\t                             uint64_t offset);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Zero",
+        "comment": "Zero overwrites length bytes of the object, starting at offset, with\nzeros.\n\nImplements:\n\n\tvoid rados_write_op_zero(rados_write_op_t write_op,\n\t                         uint64_t offset,\n\t                         uint64_t len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
