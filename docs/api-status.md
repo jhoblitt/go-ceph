@@ -48,6 +48,7 @@ AioCompletion.Release | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 SetAioMode | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 ReadOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 WriteOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.OperateAsyncWithMtime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
