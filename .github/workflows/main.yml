@@ -5,10 +5,12 @@ name: CI
 # commited to master.
 on:
   push:
-    branches: [ master ]
+    branches: [ master, rgw-go ]
   pull_request:
     branches:
       - master
+      # the jhoblitt/go-ceph integration branch that backs rgw-go
+      - rgw-go
       # run the CI also on PRs that are based on branches starting with pr/...
       - 'pr/**'
   schedule:
@@ -74,7 +76,9 @@ jobs:
         python3 -m venv venv.gitlint
         ./venv.gitlint/bin/pip install gitlint==0.19.1
     - name: Run gitlint
-      run: ./venv.gitlint/bin/gitlint -C .gitlint --commits origin/master.. lint
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: ./venv.gitlint/bin/gitlint -C .gitlint --commits "origin/${BASE_REF}.." lint
 
   # Run the test suite in a container per-ceph-codename
   test-suite:

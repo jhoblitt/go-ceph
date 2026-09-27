@@ -27,11 +27,13 @@ type readStep struct {
 func newReadStep(b []byte, offset uint64) *readStep {
 	rs := &readStep{
 		b:        b,
-		cBuffer:  (*C.char)(unsafe.Pointer(&b[0])),
 		cReadLen: C.size_t(len(b)),
 		cOffset:  C.uint64_t(offset),
 	}
-	rs.pinner.Pin(rs.cBuffer)
+	if len(b) > 0 {
+		rs.cBuffer = (*C.char)(unsafe.Pointer(&b[0]))
+		rs.pinner.Pin(rs.cBuffer)
+	}
 	// An unreleased op must not leave the buffer pinned: the runtime panics
 	// when it collects a Pinner that still holds pinned memory.
 	runtime.SetFinalizer(rs, opStepFinalizer)
