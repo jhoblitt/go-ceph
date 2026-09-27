@@ -124,6 +124,9 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 // calls return ErrImageNotOpen. Unwatch must not be called concurrently on the
 // same Watch.
 //
+// Calling Unwatch from within a watch callback can deadlock, because librbd
+// waits for in-flight callbacks to complete before un-registering a watch.
+//
 // Implements:
 //
 //	int rbd_update_unwatch(rbd_image_t image, uint64_t handle);
