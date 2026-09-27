@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -87,4 +88,42 @@ func (suite *RadosTestSuite) TestAioCompletionConcurrent() {
 		ta.NoError(err)
 		ta.Equal(fmt.Sprintf("object %d", inflight-1), string(buf[:n]))
 	})
+}
+
+// completedAioCompletion returns a completion of a read op that pins a
+// buffer, completed without librados: aioComplete is what the notifier
+// calls, and an unsubmitted librados completion reports a return value of 0.
+func completedAioCompletion(t *testing.T) *AioCompletion {
+	op := CreateReadOp()
+	defer op.Release()
+	op.Read(0, make([]byte, 16))
+
+	aioNotifier.mu.RLock()
+	c, err := newAioCompletion(readOp, &op.operation)
+	aioNotifier.mu.RUnlock()
+	require.NoError(t, err)
+	aioComplete(c.id)
+	<-c.Done()
+	return c
+}
+
+func TestAioCompletionRelease(t *testing.T) {
+	c := completedAioCompletion(t)
+	assert.NoError(t, c.Err())
+	c.Release()
+	c.Release()
+	// Release unpins the buffer, so collecting it must not panic.
+	runtime.GC()
+}
+
+func TestAioCompletionUnreleased(t *testing.T) {
+	// The runtime panics if it collects a Pinner that still pins memory.
+	// The completion's finalizer must unpin the buffers of a completion
+	// that was never released.
+	func() {
+		_ = completedAioCompletion(t)
+	}()
+	for range 3 {
+		runtime.GC()
+	}
 }
