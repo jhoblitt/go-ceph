@@ -1445,6 +1445,12 @@
         "comment": "Locator returns the object locator of the current value of the iterator,\nafter a successful call to Next. It is empty for an object stored\nwithout a locator.\n\nImplements:\n\n\tint rados_nobjects_list_next(rados_list_ctx_t ctx,\n\t                             const char **entry,\n\t                             const char **key,\n\t                             const char **nspace);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOpExecStep.Output",
+        "comment": "Output returns the output of the executed class method whatever the\nmethod returned. A method may fill its output and then fail, and librados\nhands that output over too, while Bytes returns an error for a method that\nreturned a negative value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
