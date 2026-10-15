@@ -50,6 +50,7 @@ ReadOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 WriteOp.OperateAsync | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 WriteOp.OperateAsyncWithMtime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 Iter.Locator | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpExecStep.Output | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
