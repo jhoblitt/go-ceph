@@ -27,6 +27,7 @@ type ReadOpExecStep struct {
 	outBuffPtr    *C.char
 	outBuffLen    C.size_t
 	canReadOutput bool
+	completed     bool
 }
 
 // newExecStepOp - init new *execStepOp.
@@ -73,6 +74,7 @@ func (es *ReadOpExecStep) freeBuffer() {
 		C.free(unsafe.Pointer(es.outBuffPtr))
 		es.outBuffPtr = nil
 		es.canReadOutput = false
+		es.completed = false
 	}
 }
 
@@ -85,6 +87,7 @@ func (es *ReadOpExecStep) update() error {
 	// the actions that follow it.
 	err := getErrorIfNegative(*es.cPrval)
 	es.canReadOutput = err == nil
+	es.completed = true
 	return err
 }
 
