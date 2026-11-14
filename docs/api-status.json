@@ -1451,6 +1451,18 @@
         "comment": "Output returns the output of the executed class method whatever the\nmethod returned. A method may fill its output and then fail, and librados\nhands that output over too, while Bytes returns an error for a method that\nreturned a negative value.\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Conn.ServiceRegister",
+        "comment": "ServiceRegister registers the connection in the manager's service map as the\nnamed daemon of the named service, with metadata as the daemon's static\nmetadata. librados adds metadata of its own, such as ceph_version and\nhostname, and a key it sets itself keeps librados's value. It keeps the\nregistration for the lifetime of the connection: Shutdown removes it. A\nregistration made before Connect is sent when the connection connects.\n\nA connection registers once. librados answers EBUSY while Connect runs, and\nafter a Connect that failed in its monitor bootstrap, but keeps the\nregistration all the same, so a retry is answered EEXIST.\n\nThe service may not be a Ceph daemon type (osd, mds, client, mon or mgr).\nNo metadata key may be empty, and no key or value may hold a NUL byte.\n\nImplements:\n\n\tint rados_service_register(rados_t cluster,\n\t                           const char *service,\n\t                           const char *daemon,\n\t                           const char *metadata_dict);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Conn.ServiceUpdateStatus",
+        "comment": "ServiceUpdateStatus replaces the status the connection reports in the\nmanager's service map, which the manager shows in its \"service status\"\ncommand. The connection must be connected, and the manager keeps the status\nonly of a connection registered with ServiceRegister. librados sends it with\nits next report to the manager.\n\nNo status key may be empty, and no key or value may hold a NUL byte.\n\nImplements:\n\n\tint rados_service_update_status(rados_t cluster,\n\t                                const char *status_dict);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },

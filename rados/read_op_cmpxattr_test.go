@@ -16,11 +16,7 @@ func opErrorCode(err error) int {
 	if !errors.As(err, &oe) {
 		return 0
 	}
-	var ec interface{ ErrorCode() int }
-	if !errors.As(oe.OpError, &ec) {
-		return 0
-	}
-	return ec.ErrorCode()
+	return errnoOf(oe.OpError)
 }
 
 func (suite *RadosTestSuite) TestReadOpCmpXattr() {
